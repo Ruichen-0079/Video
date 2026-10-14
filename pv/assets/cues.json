@@ -1,0 +1,13 @@
+{
+  "bpm": 75,
+  "beatsPerBar": 4,
+  "tail": 6.4,
+  "sections": [
+    { "id": "library", "name": "一 · 书海", "bars": [0, 8] },
+    { "id": "river",   "name": "二 · 流",   "bars": [8, 18] },
+    { "id": "sea",     "name": "三 · 海",   "bars": [18, 21] },
+    { "id": "isle",    "name": "四 · 万花洲", "bars": [21, 31] },
+    { "id": "ages",    "name": "五 · 散",   "bars": [31, 41] },
+    { "id": "city",    "name": "六 · 城",   "bars": [41, 48] }
+  ]
+}

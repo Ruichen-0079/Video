@@ -1,0 +1,15 @@
+{
+  "name": "wanhua-pv",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "《万花行记》程序化 PV —— Canvas 2D + WebGL 逐帧渲染",
+  "scripts": {
+    "audio": "python3 audio/score.py",
+    "preview": "node render/render.mjs --w 640 --h 360 --out out/preview.mp4",
+    "render": "node render/render.mjs --w 1920 --h 1080 --crf 18 --out out/pv.mp4"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.0"
+  }
+}

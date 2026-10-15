@@ -28,8 +28,8 @@ export default function herb(R, args) {
     const P = VILLAGER(k, sex);
     crowd.push({ a: new Actor(P, {}), x, z, k });
   });
-  const FOXW = { ...VILLAGER(5, 'f'), ears: 'fox', tunic: 0 };
-  const foxw = new Actor(FOXW, { skirt: { len: 0.95, flare: 1.7, color: FOXW.colors.robe, color2: FOXW.colors.robe2 }, tail: { len: 0.85, w: 0.06, color: [0.55, 0.3, 0.14], tip: [0.9, 0.88, 0.84] } });
+  const FOXW = { ...VILLAGER(5, 'f'), horns: 'antler', tunic: 0 };   // 鹿角：在人群里轮廓最清楚
+  const foxw = new Actor(FOXW, { skirt: { len: 0.95, flare: 1.7, color: FOXW.colors.robe, color2: FOXW.colors.robe2 } });
   const soldiers = [0, 1, 2].map((k) => ({ a: new Actor(HUMAN_SOLDIER(k + 3), {}) }));
   const smoke = new Particles(1400, 'smoke', 9);
   const sunDir = norm([-0.4, 0.25, -0.88]);
@@ -58,7 +58,7 @@ export default function herb(R, args) {
       {
         const J = foxw.T.body.J;
         const p = add(fp, [-grab * 0.25, 0, -grab * 0.2]);
-        foxw.update({ pos: add(p, [0, J.pelvis[1] - 0.03 - reveal * 0.04, 0]), yaw: 0.25 - reveal * 0.2, lean: [0.3 * reveal, 0, 0], head: [0.3 + 0.2 * reveal, 0, 0],
+        foxw.update({ pos: add(p, [0, J.pelvis[1] - 0.03 - reveal * 0.04, 0]), yaw: 0.25 - reveal * 0.2, lean: [0.12 * reveal, 0, 0], head: [0.15 - 0.2 * reveal, 0.35 * Math.sin(t * 2.3) * reveal, 0],
           handL: add(p, [0.08, J.pelvis[1] + 0.38 * reveal + 0.05, 0.14]), handR: add(p, [-0.06, J.pelvis[1] + 0.42 * reveal + 0.05, 0.16]),
           footL: add(p, [0.1, 0.085, 0]), footR: add(p, [-0.1, 0.085, 0.05]) }, dt, env);
       }

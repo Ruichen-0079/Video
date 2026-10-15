@@ -35,6 +35,8 @@ export default function grassland(R, args) {
     const h = (0.22 + 0.36 * R0()) * (1 - 0.5 * nest(x, z));
     fl.push({ x, z, h, c, s: 0.02 + 0.016 * R0(), sd: R0() });
   }
+  // 她躺着的地方（a、b）不长花，免得花从她身上穿出来（事后过滤，不改变随机序列）
+  if (part !== 'c') for (let i = fl.length - 1; i >= 0; i--) { const f = fl[i]; if (f.x > -1.05 && f.x < 1.1 && Math.abs(f.z) < 0.36) fl.splice(i, 1); }
   const flowers = flowerField(fl.length, (i) => ({ a: [fl[i].x, gy + fl[i].h, fl[i].z, fl[i].s], b: [...fl[i].c, fl[i].sd] }));
   // 草：近处密、远处疏；花茎也是草叶
   const N = part === 'a' ? 170000 : 110000;

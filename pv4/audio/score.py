@@ -255,7 +255,7 @@ bed(fire(4.6, 0.9), Tp, 0.8)
 for nm, b, d in [('D3', 0, 1.2), ('C3', 1.2, 1.0), ('A2', 2.2, 2.4)]: place(bowed(A(nm), d + 0.8, att=0.3, rel=0.8), Tp + 0.2 + b, 0, 0.6, 0.6)
 place(bell(A('D2'), 7, 0.4), Tp + 2.4, 0, 0.45, 0.85)
 for k in range(6): place(step(0.15, True), Tp + 0.3 + k * 0.62, 0, 1, 0.3)
-# 夫妻：雪院里两把琴（三度）；一个人时只剩一把
+# 夫妻：春日院子里两把琴（三度）；雪里一个人时只剩一把
 Tq = st('coupleA')
 duo = [('G4', 0, 1), ('A4', 1, 1), ('B4', 2, 1.5), ('D5', 3.5, 0.5), ('B4', 4, 1), ('A4', 5, 2)]
 melody(duo, Tq + 0.2, qin, beat=0.5, pan=-0.25, gain=0.5, rev=0.6)
@@ -289,7 +289,7 @@ place(bowed(A('C1') * 2, 8.2, att=1.2, rel=2), Tq2, 0, 0.5, 0.6)
 for r in [1, 1.5, 2.0, 3.0]: place(harmonic(A('C3') * r, 7.5, 0.5), Tq2 + 0.2, 0, 0.12, 0.9)
 for k in range(6): place(step(0.12, True), Tq2 + 0.3 + k * 0.6, -0.2, 1, 0.5)
 for k, nm in enumerate(['G4', 'E4', 'C4', 'G3']): place(harmonic(A(nm), 3, 0.6), st('hqB', 0.8 + k * 0.7), 0, 0.25, 0.85)
-# 她的几百年：越走越快的弦乐与打击乐；工业、书写、断链、枪炮
+# 她的几百年：越走越快的弦乐与打击乐；工业、断链、枪炮
 Tm = st('ming'); Tme = en('war')
 bpm = 108; b8 = 60 / bpm / 2
 k = 0

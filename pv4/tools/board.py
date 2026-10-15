@@ -13,7 +13,7 @@ LIGHT = os.environ.get('BOARD_FONT_LIGHT', '/tmp/claude-0/fonts/NotoSerifCJKsc-L
 
 # 五个层次（与 src/edit.js 的分段一致）
 SECTIONS = [(0, '引子 · 万花洲'), (10, '一 · 旧时代的世界'), (35, '二 · 历史秩序的断裂'), (69.5, '三 · 武学的传承'),
-            (104.5, '四 · 漫长历史中的个体命运'), (152.5, '五 · 开放的收束')]
+            (104.5, '四 · 漫长历史中的个体命运'), (143, '五 · 开放的收束')]
 def section(t):
     s = SECTIONS[0][1]
     for t0, name in SECTIONS:
@@ -55,6 +55,7 @@ for i, s in enumerate(shots):
     t = s['start'] + dur * 0.62
     f = os.path.join(tmp, f'{i:02d}.png')
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', f'{t:.3f}', '-i', video, '-frames:v', '1', f], check=True)
+    if not os.path.exists(f): continue
     im = Image.open(f).convert('RGB')
     iw, ih = im.size
     ah = round(iw / 2.35 / 2) * 2

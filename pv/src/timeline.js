@@ -32,7 +32,7 @@ function track(keys, t) {
 const K = {
   paper: [[0, 0], [bar(48), 0]],
   exposure: [[0, 1.0], [bar(48), 1.0]],
-  fade: [[0, 0], [1.2, 1], [bar(48) + 3.2, 1], [bar(48) + 6.2, 0]],
+  fade: [[0, 0], [1.2, 1], [bar(44) + 3.2, 1], [bar(44) + 6.2, 0]],
   tint: [[0, [1, 1, 1]], [bar(48), [1, 1, 1]]],
 };
 export function overrideGrade(k) { Object.assign(K, k); }

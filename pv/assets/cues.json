@@ -3,11 +3,14 @@
   "beatsPerBar": 4,
   "tail": 6.4,
   "sections": [
-    { "id": "library", "name": "一 · 书海", "bars": [0, 8] },
-    { "id": "river",   "name": "二 · 流",   "bars": [8, 18] },
-    { "id": "sea",     "name": "三 · 海",   "bars": [18, 21] },
-    { "id": "isle",    "name": "四 · 万花洲", "bars": [21, 31] },
-    { "id": "ages",    "name": "五 · 散",   "bars": [31, 41] },
-    { "id": "city",    "name": "六 · 城",   "bars": [41, 48] }
+    { "id": "library",  "name": "一 · 书海",      "bars": [0, 6] },
+    { "id": "scroll",   "name": "二 · 长卷",      "bars": [6, 11.75] },
+    { "id": "sea",      "name": "三 · 海",        "bars": [11.75, 14.25] },
+    { "id": "dance",    "name": "四 · 剑舞与覆灭", "bars": [14.25, 17.75] },
+    { "id": "campaign", "name": "五 · 旗与逃",    "bars": [17.75, 21.25] },
+    { "id": "deserter", "name": "六 · 笑",        "bars": [21.25, 23.75] },
+    { "id": "isle",     "name": "七 · 万花洲",    "bars": [23.75, 32.25] },
+    { "id": "ages",     "name": "八 · 散",        "bars": [32.25, 38] },
+    { "id": "city",     "name": "九 · 城",        "bars": [38, 44] }
   ]
 }

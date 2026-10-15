@@ -6,7 +6,19 @@
 // 她说自己「忘记了想象力」；而这个以想象建成的世界，偏偏在此刻开满了花。
 // 万花洲与黄泉相连：花海边缘，有一条黑色的河。
 
-import { bar, BAR } from '../timeline.js';
+import { bar as bar0, BAR } from '../timeline.js';
+import { beginMask, figure, walk, smoothMask, maskToNight, STAND, mixPose } from '../silhouette.js';
+
+// 二改：本场景原先按 20.8–33.6 小节编排，现在压缩并移到 23.4–32.25。
+// 用一条分段线性的映射把旧小节号换成新的，场景内的写法不变。
+const MAP = [[20.8, 23.4], [21, 23.75], [22.4, 24.4], [24, 25.6], [25, 26.0], [27, 27.2], [28.6, 28.0], [29.2, 28.4], [30.2, 29.3], [31.0, 30.2], [31.3, 30.4], [32.9, 31.6], [33.0, 31.75], [33.5, 32.2], [33.6, 32.25], [34.4, 33.0]];
+function remap(b, inv = false) {
+  const A = inv ? 1 : 0, B = inv ? 0 : 1;
+  if (b <= MAP[0][A]) return MAP[0][B] + (b - MAP[0][A]);
+  for (let i = 1; i < MAP.length; i++) if (b <= MAP[i][A]) { const u = (b - MAP[i - 1][A]) / (MAP[i][A] - MAP[i - 1][A]); return MAP[i - 1][B] + u * (MAP[i][B] - MAP[i - 1][B]); }
+  return MAP[MAP.length - 1][B] + (b - MAP[MAP.length - 1][A]);
+}
+const bar = (b) => bar0(remap(b));
 import { line3, dot3, C, mixc } from '../draw.js';
 import { hash, noise2, smooth, clamp, rng, easeInOut, easeOut, lerp } from '../noise.js';
 import { lightWrite } from '../fx.js';
@@ -61,7 +73,7 @@ const CAMK = [
   [33.6, [-4.0, 1.2, 11.5], [GATE[0], 1.0, GATE[2]], 44],
 ];
 function camAt(t) {
-  const b = t / BAR;
+  const b = remap(t / BAR, true);
   let i = 0;
   while (i < CAMK.length - 2 && b > CAMK[i + 1][0]) i++;
   const [b0, e0, t0, f0] = CAMK[i], [b1, e1, t1, f1] = CAMK[i + 1];
@@ -188,25 +200,29 @@ export default {
       line3(L, cam, ring, (k, n, d) => [1.2 * S, 1, 0.9, 0.8, 0.25 * Math.exp(-bloom * 0.35) * Math.exp(-d * 0.01)]);
     }
 
-    // ── 她：躺着的一点青光
+    // ── 她：仰面躺在草里（剪影），后来坐起
     const herA = inA * (1 - 0.3 * under);
-    const breathe = 0.85 + 0.15 * Math.sin(t * 1.4);
-    const hb = [];
-    for (let k = 0; k <= 10; k++) hb.push(HER[0] - 0.8 + k * 0.16, 0.07, HER[2] + 0.02 * Math.sin(k));
-    const sit = smooth(bar(29.6), bar(30.4), t);             // 后来，她坐起来
-    const herY = 0.08 + sit * 0.55;
-    line3(L, cam, hb, (k) => [3.0 * S, ...C.jade, 0.22 * herA * (1 - sit) * (k === 2 ? 1.5 : 1)]);
-    dot3(L, cam, HER[0] - 0.45, herY, HER[2], 2.2 * S, ...C.jade, 1.5 * herA * breathe);
-    dot3(L, cam, HER[0] - 0.45, herY, HER[2], 26 * S, ...C.jade, 0.12 * herA);
+    const sit = smooth(bar(29.2), bar(29.9), t);
+    const m = beginMask(W, H);
+    {
+      const foot = cam.project(HER[0], 0, HER[2]), top = cam.project(HER[0], 1.7, HER[2]);
+      if (foot && top) {
+        const hs = foot[1] - top[1];
+        const lie = { ...STAND, torso: -1.52, head: -0.1, legF: [-1.55, 0.05], legB: [-1.5, -0.05], armF: [-1.3, -0.15], armB: [-1.0, 0.3] };
+        const sitP = { ...STAND, crouch: 1.0, torso: 0.05, head: -0.1, legF: [1.4, -1.25], legB: [1.35, -1.3], armF: [0.5, 1.0], armB: [-0.4, 0.2] };
+        const pose = mixPose(lie, sitP, sit);
+        const yOff = lerp(hs * 0.05, hs * 0.18, sit);
+        figure(m, { x: foot[0] + hs * 0.1, y: foot[1] - yOff, s: hs, dir: -1, kind: 'woman', pose, t, wind: 0.3 });
+      }
+    }
 
     // ── 他：月白的一点光，走来
     let mx = hx, my = 1.35, mz = hz;
     // 29–31：两点光靠近，绕着彼此缓缓转（不必说明的亲密）
     const orbit = smooth(bar(29.2), bar(30.2), t) * (1 - smooth(bar(31.0), bar(31.6), t));
     if (orbit > 0) {
-      const a = (t - bar(29.2)) * 0.9;
-      const cx = HER[0] - 0.75, cz = HER[2] + 0.2;
-      mx = lerp(mx, cx + Math.cos(a) * 0.32, orbit); mz = lerp(mz, cz + Math.sin(a) * 0.32, orbit); my = lerp(my, 0.75 + 0.05 * Math.sin(a * 2), orbit);
+      const cx = HER[0] - 0.95, cz = HER[2] - 0.15;
+      mx = lerp(mx, cx, orbit); mz = lerp(mz, cz, orbit);
     }
     // 31–33：他走向黄泉，沿着黑河走向远处的门
     const go = easeInOut(clamp((t - bar(31.3)) / (bar(32.9) - bar(31.3))));
@@ -217,10 +233,29 @@ export default {
     }
     const flare = Math.exp(-Math.pow((t - bar(33)) / 0.35, 2)) * (t < bar(33) ? 0.6 : 1);
     const sleep = smooth(bar(33.05), bar(33.5), t);
-    const mA = himA * (1 - 0.85 * sleep) * (sleep > 0 ? 0.6 + 0.4 * Math.sin(t * 1.2) : 1);
-    dot3(L, cam, mx, my, mz, 2.4 * S, ...C.moon, 1.8 * mA + flare * 6);
-    dot3(L, cam, mx, my, mz, 24 * S, ...C.moon, 0.14 * mA + flare * 0.8);
-    if (flare > 0.02) dot3(L, cam, mx, my, mz, 160 * S, ...C.moon, flare * 0.25);
+    const mA = himA;
+    {
+      // 他：剪影。走、坐在她身边、起身走向黑河、在门前倒下沉睡
+      const foot = cam.project(mx, 0, mz), top = cam.project(mx, 1.75, mz);
+      if (foot && top && mA > 0) {
+        const hs = foot[1] - top[1];
+        const prev = cam.project(...(() => { const [px, pz] = himAt(t - 0.1); return [go > 0 ? lerp(px, GATE[0] + 1.6, easeInOut(clamp((t - 0.1 - bar(31.3)) / (bar(32.9) - bar(31.3))))) : px, 0, pz]; })());
+        const moving = (hu > 0 && hu < 1) || (go > 0 && go < 1);
+        const dirS = go > 0 ? (cam.project(GATE[0], 0, GATE[2])[0] < foot[0] ? -1 : 1) : (prev && prev[0] > foot[0] ? -1 : 1);
+        let pose = moving ? walk(t * 3.4, 0.7) : { ...STAND };
+        const sitP = { ...STAND, crouch: 1.0, torso: 0.1, legF: [1.4, -1.2], legB: [1.3, -1.35], armF: [0.6, 1.0], armB: [-0.3, 0.2] };
+        const sitK = orbit * (1 - smooth(bar(30.9), bar(31.3), t));
+        pose = mixPose(pose, sitP, sitK);
+        const sleepP = { ...STAND, torso: 1.52, head: 0.1, legF: [1.55, 0.0], legB: [1.5, -0.1], armF: [1.2, 0.3], armB: [1.4, 0.2] };
+        pose = mixPose(pose, sleepP, sleep);
+        const yy = foot[1] - hs * lerp(lerp(0.47, 0.2, sitK), 0.05, sleep);
+        figure(m, { x: foot[0], y: yy, s: hs, dir: sitK > 0.5 ? 1 : dirS, kind: 'man', pose, t, wind: 0.35, props: [{ type: 'sword', hand: 'B', angle: -0.5, len: 0.42 }] });
+      }
+      if (flare > 0.02) { dot3(L, cam, mx, 1.1, mz, 3 * S, ...C.moon, flare * 6); dot3(L, cam, mx, 1.1, mz, 160 * S, ...C.moon, flare * 0.3); }
+    }
+    smoothMask(W, H, 1.3, S);
+    // 两人的剪影一起：月白与青的边缘光取中间色
+    maskToNight(f, { rim: [0.7, 0.9, 0.95], rimK: 0.16, rimW: 1.0, alpha: Math.max(herA, mA) * (1 - 0.6 * sleep), halo: 0.02 });
     // 足迹
     if (himA > 0) {
       for (let s = 0; s < 40; s++) {
@@ -265,25 +300,5 @@ export default {
     const tx = [0.82, 0.78, 0.7];
     const tA = 1 - smooth(bar(22.4), bar(22.9), t);
     lightWrite(f, '万花洲', W * 0.5, H * 0.24, 92 * S, clamp((t - bar(21.0)) / 2.6), { color: [0.92, 0.88, 0.8], alpha: tA * inA, gap: 0.35 });
-    const sA = smooth(bar(22.4), bar(22.6), t) * (1 - smooth(bar(24.0), bar(24.4), t));
-    lightWrite(f, '在草原上睡觉', W * 0.86, H * 0.18, 34 * S, clamp((t - bar(22.5)) / 2.4), { vertical: true, color: tx, alpha: sA, align: 'top', tipK: 0.7 });
-    // 他的名字（跟着他在画面上的位置）
-    const pm = cam.project(mx, my + 0.55, mz);
-    const nA = smooth(bar(23.7), bar(23.9), t) * (1 - smooth(bar(25.1), bar(25.5), t));
-    if (pm && nA > 0) {
-      lightWrite(f, '明布川', pm[0], pm[1] - 70 * S, 34 * S, clamp((t - bar(23.7)) / 1.4), { vertical: true, color: [0.85, 0.88, 0.95], alpha: nA, tipK: 0.6 });
-      // 朱批：她的嘲笑
-      const cA = smooth(bar(24.35), bar(24.55), t) * nA;
-      if (cA > 0) {
-        drawText(f.light, '听起来像狗的名字', pm[0] + 36 * S, pm[1] - 70 * S, { font: FONTS.kai, size: 22 * S, color: 'rgb(210,90,70)', align: 'left', alpha: cA * 0.9, spacing: 0.05 });
-      }
-    }
-    const qA = smooth(bar(24.3), bar(24.5), t) * (1 - smooth(bar(26.2), bar(26.8), t));
-    lightWrite(f, '「忘记了想象力」', W * 0.15, H * 0.2, 46 * S, clamp((t - bar(24.4)) / 2.6), { vertical: true, color: [0.6, 0.95, 0.88], alpha: qA, align: 'top' });
-
-    const yA = smooth(bar(31.4), bar(31.8), t) * (1 - smooth(bar(32.8), bar(33.1), t));
-    lightWrite(f, '黄泉', W * 0.84, H * 0.2, 54 * S, clamp((t - bar(31.4)) / 1.6), { vertical: true, color: [0.85, 0.78, 0.68], alpha: yA, align: 'top' });
-    const zA = smooth(bar(33.2), bar(33.4), t);
-    lightWrite(f, '沉睡', W * 0.5, H * 0.78, 40 * S, clamp((t - bar(33.2)) / 1.4), { color: [0.75, 0.8, 0.9], alpha: zA * (1 - smooth(bar(34.1), bar(34.4), t)), gap: 0.6, tipK: 0.5 });
   },
 };

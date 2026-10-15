@@ -1,13 +1,14 @@
-// 一 · 书海（0–8 小节）
-// 序：「夜深了。乾隆巡行在无穷无尽的书架中。」
+// 一 · 书海（0–6 小节）
+// 序：「夜深了。」——无穷无尽的书架中，四个人提着一盏灯走来。
 // 两面书架如黑色城墙，向上、向远处无尽延伸。只有一盏灯。
-// 人不画出来——只有灯，和灯把人影投在书架上。
+// 人只是逆光的剪影（不点名），灯把他们的影子投在书架上。
 // 最后一小节：「古书如溪流向京都汇聚」——书脊离开书架，顺流而去；火烧穿夜，露出纸。
 
 import { bar } from '../timeline.js';
 import { line3, dot3, C } from '../draw.js';
 import { hash, noise2, smooth, clamp, rng, win, easeInOut } from '../noise.js';
 import { lightWrite } from '../fx.js';
+import { beginMask, figure, walk, smoothMask, maskToNight, STAND } from '../silhouette.js';
 
 const AISLE = 1.55;          // 过道半宽
 const ROW = 0.42;            // 每层书架高
@@ -21,7 +22,7 @@ function spine(side, row, k) {
   return { h: ROW * (0.55 + 0.38 * h), lean: (hash(k * 3.1 + row) - 0.5) * 0.04 * (h > 0.92 ? 4 : 1), w: 0.05 + 0.05 * hash(k + row * 9 + side) };
 }
 
-// 人：四人一组，乾隆与三位学士；只用来投影
+// 人：四人一组，一人在前，三人提灯随行
 function figures(t) {
   const z = 9.5 - t * 0.06;               // 慢慢走近
   const sway = Math.sin(t * 1.7) * 0.02;
@@ -54,22 +55,22 @@ function lampLight(P, F, t) {
 
 export default {
   name: 'library',
-  start: 0, end: bar(8), post: 0.85,
+  start: 0, end: bar(6), post: 0.85,
   render(f) {
     const { t, cam, L, S, post } = f;
     const F = figures(t);
     const flick = 0.92 + 0.08 * noise2(t * 6, 0.3) + 0.04 * Math.sin(t * 23);
     // 镜头：沿过道缓缓前推，略微仰视
-    const push = easeInOut(clamp(t / bar(8)));
+    const push = easeInOut(clamp(t / bar(6)));
     const ez = -1.2 + push * 4.2;
     const tilt = 0.22 + 0.06 * Math.sin(t * 0.12);
     // 最后一小节：抬头，看书脊离开
-    const up = smooth(bar(6.5), bar(8), t);
+    const up = smooth(bar(4.6), bar(6), t);
     cam.set([0.12 * Math.sin(t * 0.07), 1.35 + up * 0.4, ez], [0.0, 1.35 + tilt * 8 + up * 9, ez + 8], 58 - up * 6, 0.004);
     cam.focus = 7; cam.aperture = 0.03;
 
-    const intro = smooth(0.4, 4.5, t);          // 灯亮起
-    const stream = smooth(bar(7), bar(8) + 1.0, t); // 古书如溪流
+    const intro = smooth(0.4, 3.5, t);          // 灯亮起
+    const stream = smooth(bar(4.8), bar(6) + 1.0, t); // 古书如溪流
     const ambient = 0.012 * intro;
     const lampK = 1.1 * intro * flick;
     const gold = C.gold, moon = C.moon;
@@ -166,13 +167,13 @@ export default {
     dot3(L, cam, lx, ly, lzz, 60 * S, ...gold, 0.06 * intro * flick);
 
     // ── 余烬：最后一小节，火从灯处起
-    const fire = smooth(bar(7), bar(8), t);
+    const fire = smooth(bar(4.8), bar(6), t);
     if (fire > 0) {
       const r = rng(99);
       for (let i = 0; i < 260; i++) {
         const s0 = r(), s1 = r(), s2 = r(), s3 = r();
         const life = 2.5 + s0 * 2;
-        const ph = ((t - bar(7) + s1 * life) % life) / life;
+        const ph = ((t - bar(4.8) + s1 * life) % life) / life;
         const px = lx + (s2 - 0.5) * 2 + Math.sin(ph * 5 + s3 * 9) * 0.3;
         const py = ly + ph * (3 + s3 * 5);
         const pz = lzz + (s3 - 0.5) * 2 - ph * 1.5;
@@ -183,17 +184,34 @@ export default {
     // ── 文字（作者原文）
     const W = f.W, H = f.H;
     const txt = [0.80, 0.74, 0.64];
-    const a1 = 1 - smooth(bar(5), bar(5.6), t);
-    lightWrite(f, '夜深了。', W * 0.86, H * 0.2, 46 * S, clamp((t - bar(1)) / 2.4), { vertical: true, color: txt, alpha: a1 * 0.9, align: 'top' });
-    lightWrite(f, '乾隆巡行在无穷无尽的书架中。', W * 0.80, H * 0.2, 30 * S, clamp((t - bar(2.5)) / 5.0), { vertical: true, color: txt, alpha: a1 * 0.7, align: 'top', tipK: 0.6, overlap: 0.5 });
-    const a2 = 1 - smooth(bar(7.6), bar(8.2), t);
-    lightWrite(f, '逝者如斯夫，', W * 0.52, H * 0.16, 64 * S, clamp((t - bar(5.8)) / 3.6), { vertical: true, color: txt, alpha: a2, align: 'top' });
-    lightWrite(f, '陛下。', W * 0.44, H * 0.16 + 64 * S * 1.12 * 3, 64 * S, clamp((t - bar(6.9)) / 1.6), { vertical: true, color: txt, alpha: a2, align: 'top' });
+    const a1 = 1 - smooth(bar(2.8), bar(3.3), t);
+    lightWrite(f, '夜深了。', W * 0.86, H * 0.2, 46 * S, clamp((t - bar(0.75)) / 2.2), { vertical: true, color: txt, alpha: a1 * 0.9, align: 'top' });
+    const a2 = 1 - smooth(bar(5.4), bar(5.9), t);
+    lightWrite(f, '逝者如斯夫，', W * 0.52, H * 0.16, 64 * S, clamp((t - bar(3.0)) / 3.2), { vertical: true, color: txt, alpha: a2, align: 'top' });
+    lightWrite(f, '陛下。', W * 0.44, H * 0.16 + 64 * S * 1.12 * 3, 64 * S, clamp((t - bar(4.0)) / 1.6), { vertical: true, color: txt, alpha: a2, align: 'top' });
+
+    // ── 四个人：逆光剪影，走在灯旁
+    {
+      const m = beginMask(W, H);
+      const order = [3, 1, 0, 2];
+      const ph = t * 2.2;
+      for (const k of order) {
+        const [px, pz] = F.people[k];
+        const foot = cam.project(px, 0, pz), headp = cam.project(px, 1.7, pz);
+        if (!foot || !headp) continue;
+        const sc = (foot[1] - headp[1]);
+        const pose = walk(ph + k * 1.7, 0.45, { ...STAND, torso: k === 0 ? 0.0 : 0.08 });
+        if (k === 1) pose.armF = [1.1, 0.3];                // 提灯的人
+        figure(m, { x: foot[0], y: foot[1] - sc * 0.47, s: sc, dir: -1, pose, kind: k === 0 ? 'man' : 'old', hair: k === 0 ? 'knot' : 'knot', t, wind: 0.15 });
+      }
+      smoothMask(W, H, 1.5, S);
+      maskToNight(f, { rim: [1.0, 0.75, 0.42], rimK: 0.3 * intro * (1 - stream), rimW: 1.5, alpha: intro * (1 - stream * 0.9), halo: 0.05 });
+    }
 
     // 火烧穿夜：从灯的位置起
     const pl = cam.project(lx, ly, lzz);
-    if (t > bar(7.5)) {
-      post.burn = Math.pow((t - bar(7.5)) / (bar(8.25) - bar(7.5)), 1.6) * 1.6 - 0.02;
+    if (t > bar(5.4)) {
+      post.burn = Math.pow((t - bar(5.4)) / (bar(6.15) - bar(5.4)), 1.6) * 1.6 - 0.02;
       post.burnMode = 0;
       post.burnC = [0.52 * W / H, 0.12];
       post.inkSel = 1;      // 新世界（纸上的墨）只在烧穿处出现

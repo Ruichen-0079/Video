@@ -4,7 +4,10 @@
 // 两根线变成车流里的两道光，并行一段；青色的那一道转向远处，没有熄灭，只是走远了。
 // 结尾不替作者决定她的结局。
 
-import { bar, BAR } from '../timeline.js';
+import { bar as bar0, BAR } from '../timeline.js';
+import { beginMask, figure, smoothMask, maskToNight, STAND } from '../silhouette.js';
+// 二改：整段提前 3 小节（原 41–48 → 38–45）
+const bar = (b) => bar0(b - 3);
 import { line3, dot3, C, mixc, rgba } from '../draw.js';
 import { hash, noise2, smooth, clamp, rng, easeInOut, easeOut, lerp } from '../noise.js';
 import { lightWrite } from '../fx.js';
@@ -169,6 +172,27 @@ export default {
         L.p(x, y, 1.4 * S, 1, 0.95, 0.9, 0.12 * Math.sin(s * Math.PI) * room);
       }
       L.end();
+    }
+
+    // ── 他：站在窗前（剪影），看着街
+    const meA = smooth(bar(43.4), bar(44.2), t) * (1 - smooth(bar(46.6), bar(47.0), t));
+    if (meA > 0) {
+      const m = beginMask(W, H);
+      // 过肩镜头：前景里一个虚焦的头与肩的背影
+      const cx = W * 0.17, base = H * 1.02, hh = H * 0.62;
+      m.beginPath();
+      m.moveTo(cx - hh * 0.55, base);
+      m.bezierCurveTo(cx - hh * 0.55, base - hh * 0.3, cx - hh * 0.5, base - hh * 0.42, cx - hh * 0.3, base - hh * 0.47);
+      m.quadraticCurveTo(cx - hh * 0.12, base - hh * 0.52, cx - hh * 0.08, base - hh * 0.62);
+      m.lineTo(cx + hh * 0.08, base - hh * 0.62);
+      m.quadraticCurveTo(cx + hh * 0.12, base - hh * 0.52, cx + hh * 0.3, base - hh * 0.47);
+      m.bezierCurveTo(cx + hh * 0.5, base - hh * 0.42, cx + hh * 0.55, base - hh * 0.3, cx + hh * 0.55, base);
+      m.closePath(); m.fill();
+      m.fillRect(cx - hh * 0.08, base - hh * 0.72, hh * 0.16, hh * 0.2);                 // 颈
+      m.beginPath(); m.ellipse(cx + hh * 0.01, base - hh * 0.84, hh * 0.15, hh * 0.18, 0.08, 0, 6.283); m.fill();   // 头
+      m.beginPath(); m.ellipse(cx - hh * 0.01, base - hh * 0.9, hh * 0.16, hh * 0.14, 0, 0, 6.283); m.fill();      // 发
+      smoothMask(W, H, 3.0, S);
+      maskToNight(f, { rim: [1.0, 0.8, 0.6], rimK: 0.07, rimW: 3, alpha: meA * 0.97, blur: 9, halo: 0.0, dir: [0.8, -0.3] });
     }
 
     // ── 字（序，作者原文）

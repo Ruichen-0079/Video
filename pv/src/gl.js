@@ -48,7 +48,7 @@ void main(){ o = texture(tex, uv) + texture(tex2, uv) * k2; }`;
 
 const FS_FINAL = `#version 300 es
 precision highp float;
-uniform sampler2D lightT, inkT, lightC, inkC, b1, b2, b3, b4;
+uniform sampler2D lightT, inkT, lightC, inkC, b1, b2, b3, b4, occC;
 uniform vec2 res; uniform float time, frame;
 uniform float paper;      // 0 夜 → 1 纸
 uniform float exposure, bloomK, grainK, vignK, fade, inkK;
@@ -94,7 +94,7 @@ void main(){
   vec3 ink = texture(inkT, uv).rgb;
   vec4 ic = texture(inkC, uv);
   // 画布上的墨：rgb 是「在白纸上看起来的颜色」，转换为吸收率
-  vec3 icAbs = -log(max(ic.rgb / max(ic.a, 1e-4), vec3(0.03))) * ic.a;
+  vec3 icAbs = -log(clamp(ic.rgb, vec3(0.03), vec3(1.0))) * ic.a;
   float grainInk = 0.8 + 0.4 * fbm(q * 60.0);
   vec3 absorb = (ink + icAbs) * grainInk * inkK * inkMul;
   vec3 col = bg * exp(-absorb);
@@ -102,7 +102,12 @@ void main(){
   // ── 光
   vec3 L = texture(lightT, uv).rgb + texture(lightC, uv).rgb;
   vec3 B = texture(b1, uv).rgb * 0.55 + texture(b2, uv).rgb * 0.75 + texture(b3, uv).rgb * 0.9 + texture(b4, uv).rgb * 1.1;
-  col += (L + B * bloomK) * lightMul;
+  // 剪影（夜）：遮住其后的光；光晕在其后加上，会从边缘漫进来——逆光的感觉
+  vec4 oc = texture(occC, uv);
+  oc.a *= lightMul;   // 剪影属于夜的世界，转场时和光一起被烧掉或显现
+  col += L * lightMul;
+  col = mix(col, oc.rgb, oc.a);   // 纹理是非预乘的：rgb 即颜色
+  col += B * bloomK * lightMul * (1.0 - 0.9 * oc.a);
   if (burn > -0.5) {
     if (burnMode < 0.5) col += vec3(1.6, 0.55, 0.15) * (0.6 + 0.8 * fbm(q * 30.0 + time)) * edge;
     else if (burnMode < 1.5) {
@@ -283,6 +288,7 @@ export class Renderer {
     }
     this.texLightC = canvasTex(gl);
     this.texInkC = canvasTex(gl);
+    this.texOccC = canvasTex(gl);
 
     this.lineVBO = gl.createBuffer();
     this.lineIBO = gl.createBuffer();
@@ -368,11 +374,12 @@ export class Renderer {
     gl.bindTexture(gl.TEXTURE_2D, tex);
   }
 
-  finish(lightCanvas, inkCanvas, P) {
+  finish(lightCanvas, inkCanvas, P, occCanvas) {
     const gl = this.gl;
     this.flush();
     this.upload(this.texLightC, lightCanvas);
     this.upload(this.texInkC, inkCanvas);
+    this.upload(this.texOccC, occCanvas);
 
     // 光晕：逐级降采样 + 高斯
     let src = this.light.tex, src2 = this.texLightC;
@@ -389,8 +396,8 @@ export class Renderer {
     }
 
     this.pass(this.pFinal, null, (u) => {
-      const T = [this.light.tex, this.ink.tex, this.texLightC, this.texInkC, this.bl[0][0].tex, this.bl[1][0].tex, this.bl[2][0].tex, this.bl[3][0].tex];
-      const N = ['lightT', 'inkT', 'lightC', 'inkC', 'b1', 'b2', 'b3', 'b4'];
+      const T = [this.light.tex, this.ink.tex, this.texLightC, this.texInkC, this.bl[0][0].tex, this.bl[1][0].tex, this.bl[2][0].tex, this.bl[3][0].tex, this.texOccC];
+      const N = ['lightT', 'inkT', 'lightC', 'inkC', 'b1', 'b2', 'b3', 'b4', 'occC'];
       T.forEach((t, i) => { this.bindTex(i, t); gl.uniform1i(u[N[i]], i); });
       gl.uniform2f(u.res, this.W, this.H);
       gl.uniform1f(u.time, P.time);

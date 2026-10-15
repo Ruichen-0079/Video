@@ -15,8 +15,8 @@ const R = new Renderer(canvas, W, H);
 const cam = new Camera(W, H);
 
 const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
-const lightC = mk(), inkC = mk();
-const light = lightC.getContext('2d'), ink = inkC.getContext('2d');
+const lightC = mk(), inkC = mk(), occC = mk();
+const light = lightC.getContext('2d'), ink = inkC.getContext('2d'), occ = occC.getContext('2d');
 
 async function init() {
   const cues = await (await fetch('assets/cues.json')).json();
@@ -46,25 +46,27 @@ function totalDuration(c) {
 function renderFrame(t, frame) {
   R.begin();
   // 重设宽度会彻底清空画布并标记为已更改；仅 clearRect 时，Chromium 上传纹理可能沿用旧快照
-  lightC.width = W; inkC.width = W;
+  lightC.width = W; inkC.width = W; occC.width = W;
+  // 每块画布都写一个几乎透明的像素：保证 Chromium 认为内容已更新，纹理不会沿用旧快照
+  for (const c of [light, ink, occ]) { c.fillStyle = 'rgba(0,0,0,0.004)'; c.fillRect(0, 0, 1, 1); }
   light.globalCompositeOperation = 'lighter';
   ink.globalCompositeOperation = 'source-over';
   const S = H / 1080; // 以 1080p 为设计基准的缩放
   const post = grade(t);
-  const f = { t, W, H, S, R, cam, light, ink, post, L: R.lightLines, I: R.inkLines, frame };
+  const f = { t, W, H, S, R, cam, light, ink, occ, post, L: R.lightLines, I: R.inkLines, frame };
   for (const s of SCENES) {
     if (t >= s.start - (s.pre || 0) && t < s.end + (s.post || 0)) {
       f.lt = t - s.start;
       f.u = (t - s.start) / (s.end - s.start);
-      light.save(); ink.save();
+      light.save(); ink.save(); occ.save();
       s.render(f);
-      light.restore(); ink.restore();
+      light.restore(); ink.restore(); occ.restore();
       R.flush();
     }
   }
   post.time = t;
   post.frame = frame ?? Math.round(t * FPS);
-  R.finish(lightC, inkC, post);
+  R.finish(lightC, inkC, post, occC);
 }
 
 window.PV = {

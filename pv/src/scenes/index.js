@@ -1,7 +1,10 @@
 import library from './library.js';
 import scroll from './scroll.js';
 import sea from './sea.js';
+import dance from './dance.js';
+import campaign from './campaign.js';
+import deserter from './deserter.js';
 import isle from './isle.js';
 import ages from './ages.js';
 import city from './city.js';
-export const SCENES = [library, scroll, sea, isle, ages, city];
+export const SCENES = [library, scroll, sea, dance, campaign, deserter, isle, ages, city];

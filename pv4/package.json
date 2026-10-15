@@ -1,0 +1,7 @@
+{
+  "name": "wanhua-pv3",
+  "private": true,
+  "type": "module",
+  "description": "《万花行记》PV 第三版「逝水」——波动方程水面 + 焦散 + 程序化配乐",
+  "dependencies": { "playwright-core": "1.56.0" }
+}

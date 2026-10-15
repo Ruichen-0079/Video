@@ -100,7 +100,7 @@ export default {
       Lc.save();
       Lc.globalCompositeOperation = 'lighter';
       {
-        const g = Lc.createRadialGradient(W * 0.5, H * 0.62, 0, W * 0.5, H * 0.62, W * 0.55);
+        const g = Lc.createRadialGradient(W * 0.5, H * 0.62, 0, W * 0.5, H * 0.62, W * 0.95);
         g.addColorStop(0, `rgba(190,60,18,${0.32 * A})`); g.addColorStop(0.5, `rgba(110,26,8,${0.16 * A})`); g.addColorStop(1, 'rgba(40,8,2,0)');
         Lc.fillStyle = g; Lc.fillRect(0, 0, W, H);
       }

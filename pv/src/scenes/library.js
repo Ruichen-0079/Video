@@ -1,5 +1,5 @@
 // 一 · 书海（0–6 小节）
-// 序：「夜深了。」——无穷无尽的书架中，四个人提着一盏灯走来。
+// 序：「夜深了。乾隆巡行在无穷无尽的书架中。《四库全书》。」——四个人提着一盏灯走来。
 // 两面书架如黑色城墙，向上、向远处无尽延伸。只有一盏灯。
 // 人只是逆光的剪影（不点名），灯把他们的影子投在书架上。
 // 最后一小节：「古书如溪流向京都汇聚」——书脊离开书架，顺流而去；火烧穿夜，露出纸。
@@ -184,8 +184,10 @@ export default {
     // ── 文字（作者原文）
     const W = f.W, H = f.H;
     const txt = [0.80, 0.74, 0.64];
-    const a1 = 1 - smooth(bar(2.8), bar(3.3), t);
-    lightWrite(f, '夜深了。', W * 0.86, H * 0.2, 46 * S, clamp((t - bar(0.75)) / 2.2), { vertical: true, color: txt, alpha: a1 * 0.9, align: 'top' });
+    const a1 = 1 - smooth(bar(3.0), bar(3.5), t);
+    lightWrite(f, '夜深了。', W * 0.86, H * 0.2, 46 * S, clamp((t - bar(0.75)) / 2.0), { vertical: true, color: txt, alpha: a1 * 0.9, align: 'top' });
+    lightWrite(f, '乾隆巡行在无穷无尽的书架中。', W * 0.81, H * 0.2, 28 * S, clamp((t - bar(1.25)) / 3.0), { vertical: true, color: txt, alpha: a1 * 0.72, align: 'top', tipK: 0.6, overlap: 0.5 });
+    lightWrite(f, '《四库全书》。', W * 0.765, H * 0.2, 28 * S, clamp((t - bar(2.05)) / 1.6), { vertical: true, color: txt, alpha: a1 * 0.72, align: 'top', tipK: 0.6 });
     const a2 = 1 - smooth(bar(5.4), bar(5.9), t);
     lightWrite(f, '逝者如斯夫，', W * 0.52, H * 0.16, 64 * S, clamp((t - bar(3.0)) / 3.2), { vertical: true, color: txt, alpha: a2, align: 'top' });
     lightWrite(f, '陛下。', W * 0.44, H * 0.16 + 64 * S * 1.12 * 3, 64 * S, clamp((t - bar(4.0)) / 1.6), { vertical: true, color: txt, alpha: a2, align: 'top' });

@@ -165,7 +165,7 @@ export function writeLine(ctx, str, x, y, size, p, { vertical = false, gap = 0.1
     const cx = vertical ? ox - size / 2 : ox + i * step;
     const cy = vertical ? oy + i * step : y - size / 2;
     if (q <= 0) return;
-    if ('，。、「」：'.includes(c)) {
+    if ('，。、「」：《》'.includes(c)) {
       drawText(ctx, c, cx + size / 2, cy + size / 2, { font: fallbackFont, size: size * 0.9, color, alpha: q });
       return;
     }

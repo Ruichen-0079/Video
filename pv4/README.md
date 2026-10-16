@@ -4,7 +4,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `release/wanhua_pv4_1080p.mp4` | 成片 |
+| `release/wanhua_pv4_1080p.mp4` | 成片（H.264 两遍编码，约 4.1 Mb/s，91 MB；AAC 256 kb/s） |
 | `release/wanhua_pv4_preview_540p.mp4` | 小体积预览（960×540） |
 | `release/storyboard.jpg` | 分镜总览：每个镜头一帧，带时间码、段落与这一镜的文字 |
 | `release/poster.jpg` | 海报帧 |
@@ -118,7 +118,7 @@ python3 tools/fonts.py            # 字体子集（需要原始字体目录，�
 node tools/cues.mjs               # 导出剪辑表
 python3 audio/score.py            # 生成配乐 assets/score.wav（需要 ../pv3/assets/score.wav 作为结尾）
 tools/final.sh                    # 分段渲染 1080p，拼接河面结尾，混入配乐 → out/final/pv4.mp4
-python3 tools/board.py out/final/pv4.mp4 release/storyboard.jpg
+tools/release.sh                  # 压成 100 MB 以内的成片，另出预览、海报帧与分镜总览
 
 # 调试单个镜头：
 tools/stills.sh duel out/duel "a|{\"cutT\":3.4}|1.5" "b|{\"cutT\":3.4}|3.6"
@@ -126,7 +126,14 @@ tools/stills.sh duel out/duel "a|{\"cutT\":3.4}|1.5" "b|{\"cutT\":3.4}|3.6"
 node render/render.mjs --w 640 --h 360 --workers 4 --audio none --out out/rough.mp4
 ```
 
-在 4 核、无 GPU 的容器里（SwiftShader 软件渲染），1080p 平均每帧约 5 秒，整片约 6–7 小时。
+在 4 核、无 GPU 的容器里（SwiftShader 软件渲染），1080p 平均每帧约 3.5 秒，整片约 5 小时。分段渲染出来的母带（crf 16，约 735 MB）太大，没有放进仓库；`tools/final.sh` 可以重新生成。
+
+交付前检查过：
+- 帧数：5025 帧，等于 167.5 秒 × 30 fps。
+- 音画同步：周朝斩臂那一刻，画面闪白在 80.40 秒，刀声起音在 80.40 秒。
+- 黑场：除片尾字卡外，没有超过 0.25 秒的黑场。
+- 字幕：每一句都在黑边里，完整显示。
+- 结尾：第三版河面一段的拼接处没有跳帧。
 
 ## 已知的不足
 
